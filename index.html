@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Materiales Moreno — Punto de Venta</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#1a5276;--primary-light:#2e86c1;--accent:#e67e22;
+  --bg:#f4f6f8;--white:#fff;--gray:#6c757d;--light:#ecf0f1;
+  --success:#27ae60;--danger:#e74c3c;--radius:10px;
+  --shadow:0 2px 12px rgba(0,0,0,0.1)
+}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:#2c3e50;min-height:100vh}
+#header{background:var(--primary);color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+#logo{display:flex;align-items:center;gap:10px}
+#logo img{height:36px;border-radius:6px;background:#fff;padding:2px}
+#logo-text h1{color:#fff;font-size:1rem;font-weight:600}
+#logo-text p{font-size:.72rem;opacity:.8}
+#search-wrap{position:relative;flex:1;max-width:300px;margin:0 14px}
+#search-wrap input{width:100%;background:rgba(255,255,255,0.15);border:none;outline:none;color:#fff;font-size:.88rem;padding:7px 14px 7px 34px;border-radius:50px}
+#search-wrap input::placeholder{color:rgba(255,255,255,0.65)}
+#search-wrap .si{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.8;pointer-events:none}
+#search-drop{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border-radius:8px;box-shadow:var(--shadow);max-height:280px;overflow-y:auto;z-index:200;border:1px solid #dce3e9;display:none}
+.sdr{padding:10px 14px;cursor:pointer;font-size:.85rem;border-bottom:1px solid #f0f0f0}
+.sdr:hover{background:#eaf4fb}
+.sdr-name{font-weight:600;color:#2c3e50}
+.sdr-price{font-size:.75rem;color:var(--primary-light);font-weight:600}
+#client-tag{font-size:.78rem;opacity:.85;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis}
+
+#main{display:flex;min-height:calc(100vh - 62px)}
+#content{flex:1;padding:22px;transition:margin-right .3s}
+#content.shifted{margin-right:290px}
+
+#cart-panel{position:fixed;top:62px;right:0;width:290px;height:calc(100vh - 62px);background:#fff;border-left:1px solid #dce3e9;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s;z-index:90;box-shadow:-4px 0 16px rgba(0,0,0,.08)}
+#cart-panel.open{transform:translateX(0)}
+#cart-head{padding:12px 14px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:.92rem}
+#cart-body{flex:1;overflow-y:auto;padding:10px}
+.ci{background:var(--light);border-radius:8px;padding:9px;margin-bottom:7px;font-size:.82rem}
+.ci-name{font-weight:600;line-height:1.3;margin-bottom:3px}
+.ci-price{color:var(--primary-light);font-weight:600;margin-bottom:5px;font-size:.8rem}
+.ci-row{display:flex;align-items:center;gap:7px}
+.qb{width:24px;height:24px;border:1px solid #bbb;background:#fff;border-radius:50%;cursor:pointer;font-size:.95rem;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.qb:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
+.rb{margin-left:auto;background:none;border:none;color:var(--danger);cursor:pointer;font-size:.72rem;padding:2px 5px;border-radius:4px}
+.rb:hover{background:#fdecea}
+#cart-foot{padding:12px 14px;border-top:1px solid #dce3e9}
+#cart-total{font-size:.95rem;font-weight:700;color:var(--primary);margin-bottom:9px}
+#btn-co{width:100%;padding:12px;background:var(--success);color:#fff;border:none;border-radius:var(--radius);font-size:.95rem;font-weight:600;cursor:pointer}
+#btn-co:hover{background:#219a52}
+.empty-cart{text-align:center;padding:28px;color:var(--gray);font-size:.85rem}
+
+.screen{display:none;animation:fi .25s ease}
+.screen.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+#sw{text-align:center;padding:36px 16px}
+.wi{font-size:3rem;margin-bottom:10px}
+.wt{font-size:1.7rem;font-weight:700;color:var(--primary);margin-bottom:6px}
+.ws{color:var(--gray);margin-bottom:28px}
+.card{background:#fff;border-radius:var(--radius);padding:26px;box-shadow:var(--shadow);max-width:440px;margin:0 auto}
+.ig{margin-bottom:14px;text-align:left}
+.ig label{display:block;font-size:.83rem;font-weight:600;color:var(--primary);margin-bottom:5px}
+.ig input{width:100%;padding:10px 13px;border:1.5px solid #dce3e9;border-radius:8px;font-size:.93rem;outline:none;transition:border-color .2s}
+.ig input:focus{border-color:var(--primary-light)}
+.bp{width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;margin-top:4px}
+.bp:hover{background:var(--primary-light)}
+.err{color:var(--danger);font-size:.8rem;margin-bottom:10px}
+
+#sc{max-width:840px;margin:0 auto}
+.gb{background:#fff;border-radius:var(--radius);padding:14px 18px;margin-bottom:18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:11px}
+.ga{width:40px;height:40px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1rem;flex-shrink:0}
+.gth2{font-size:.97rem;color:var(--primary);font-weight:600}
+.gtp{font-size:.82rem;color:var(--gray)}
+.st{font-size:.95rem;font-weight:600;color:var(--primary);margin-bottom:12px}
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:9px;margin-bottom:20px}
+.cb{background:#fff;border:1.5px solid #dce3e9;border-radius:var(--radius);padding:13px 9px;cursor:pointer;font-size:.8rem;font-weight:600;color:#2c3e50;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px}
+.cb:hover{border-color:var(--primary-light);background:#eaf4fb;color:var(--primary)}
+.ci2{font-size:1.3rem}
+.amb{background:#fff;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);text-align:center;margin-bottom:18px}
+.amb h2{color:var(--primary);margin-bottom:12px;font-size:1rem}
+.abtns{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
+
+#sp{max-width:840px;margin:0 auto}
+.bb{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--primary-light);font-size:.88rem;font-weight:600;cursor:pointer;margin-bottom:14px;padding:5px 0}
+.bb:hover{color:var(--primary)}
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:13px}
+.pc{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;border:1.5px solid transparent}
+.pc:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(0,0,0,.13);border-color:var(--primary-light)}
+.pi{width:100%;height:135px;object-fit:cover;background:#eee;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#bbb}
+.pi img{width:100%;height:100%;object-fit:cover}
+.pif{padding:11px}
+.pn{font-size:.8rem;font-weight:600;margin-bottom:3px;line-height:1.3;color:#2c3e50}
+.pp{font-size:.92rem;font-weight:700;color:var(--primary-light);margin-bottom:6px}
+.acb{width:100%;padding:7px;background:var(--primary);color:#fff;border:none;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;transition:background .2s}
+.acb:hover{background:var(--primary-light)}
+.acb.added{background:var(--success)}
+
+.loading{text-align:center;padding:36px;color:var(--gray)}
+.sp2{width:34px;height:34px;border:3px solid #dce3e9;border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#scf{max-width:660px;margin:0 auto}
+.cfcard{background:#fff;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+.cfi{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #eee;font-size:.88rem}
+.cfi:last-child{border-bottom:none}
+.cft{font-size:1.05rem;font-weight:700;color:var(--primary);padding-top:11px}
+.bs{padding:12px 26px;background:var(--success);color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer}
+.bs:hover{background:#219a52}
+.bse{padding:12px 26px;background:#fff;color:var(--primary);border:2px solid var(--primary);border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;margin-right:9px}
+.bse:hover{background:var(--light)}
+
+.os{background:#fff;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);max-width:480px;margin:0 auto}
+.oi{width:100%;padding:11px 15px;border:1.5px solid #dce3e9;border-radius:8px;font-size:.93rem;outline:none;margin-bottom:11px}
+.oi:focus{border-color:var(--primary-light)}
+.ba{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:.93rem;font-weight:600;cursor:pointer}
+.assist{background:#fff8e1;border:1px solid #f39c12;border-radius:8px;padding:14px;text-align:center;font-size:.88rem;color:#7d5a00;margin-top:11px}
+
+#notif{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#2c3e50;color:#fff;padding:9px 20px;border-radius:50px;font-size:.85rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .3s;z-index:999}
+#notif.show{opacity:1}
+
+#lock{display:none;position:fixed;inset:0;background:var(--primary);z-index:9999;align-items:center;justify-content:center}
+.lcard{background:#fff;border-radius:14px;padding:34px 30px;max-width:340px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+.li{font-size:2.2rem;margin-bottom:7px}
+.lcard h2{color:var(--primary);margin-bottom:3px;font-size:1.1rem;font-weight:600}
+.lcard p{color:var(--gray);font-size:.82rem;margin-bottom:18px}
+#lp{width:100%;padding:11px 14px;border:1.5px solid #dce3e9;border-radius:8px;font-size:1rem;outline:none;text-align:center;letter-spacing:4px;margin-bottom:8px}
+#lerr{color:var(--danger);font-size:.8rem;margin-bottom:8px;display:none}
+
+@media(max-width:600px){
+  #search-wrap{max-width:150px}
+  .cg{grid-template-columns:repeat(3,1fr)}
+  #cart-panel{width:100%}
+  #content.shifted{margin-right:0}
+}
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <div class="lcard">
+    <div class="li">🔒</div>
+    <h2>Materiales Moreno</h2>
+    <p>Ingresá la contraseña para continuar</p>
+    <input id="lp" type="password" placeholder="Contraseña" autocomplete="off">
+    <div id="lerr">Contraseña incorrecta.</div>
+    <button class="bp" onclick="tryUnlock()">Ingresar →</button>
+  </div>
+</div>
+
+<div id="header">
+  <div id="logo">
+    <img src="https://materialesmoreno.com.ar/tienda/wp-content/uploads/morenologo.png" alt="Logo" onerror="this.style.display='none'">
+    <div id="logo-text"><h1>Materiales Moreno</h1><p>Punto de Venta</p></div>
+  </div>
+  <div id="search-wrap">
+    <svg class="si" width="15" height="15" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="gs" placeholder="Buscar producto..." autocomplete="off">
+    <div id="search-drop"></div>
+  </div>
+  <div id="client-tag"></div>
+</div>
+
+<div id="cart-panel">
+  <div id="cart-head">
+    🛒 Tu carrito
+    <button onclick="toggleCart()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:1rem">✕</button>
+  </div>
+  <div id="cart-body"><div class="empty-cart">Tu carrito está vacío</div></div>
+  <div id="cart-foot">
+    <div id="cart-total">Total: $0</div>
+    <button id="btn-co" onclick="goConfirm()">✅ Finalizar compra</button>
+  </div>
+</div>
+
+<div id="main"><div id="content">
+
+  <!-- WELCOME -->
+  <div id="sw" class="screen active">
+    <div class="wi">🏗️</div>
+    <div class="wt">¡Hola! Bienvenido a Materiales Moreno</div>
+    <div class="ws">Completá tus datos para comenzar</div>
+    <div class="card">
+      <div class="ig"><label>Nombre</label><input id="fn" type="text" placeholder="Tu nombre"></div>
+      <div class="ig"><label>Apellido</label><input id="ln" type="text" placeholder="Tu apellido"></div>
+      <div class="ig"><label>DNI</label><input id="dn" type="text" placeholder="Número de documento" inputmode="numeric"></div>
+      <div id="ferr" class="err" style="display:none">Por favor completá todos los campos.</div>
+      <button class="bp" onclick="startShopping()">Comenzar compra →</button>
+    </div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <div id="sc" class="screen">
+    <div class="gb">
+      <div class="ga" id="av">?</div>
+      <div><div class="gth2" id="gn">¡Hola!</div><div class="gtp">¿Qué querés comprar hoy?</div></div>
+    </div>
+    <div class="amb" id="amb" style="display:none">
+      <h2>¿Qué más te gustaría sumar?</h2>
+      <div class="abtns">
+        <button class="bse" onclick="showCats()">➕ Agregar más productos</button>
+        <button class="bs" onclick="goConfirm()">✅ Finalizar compra</button>
+      </div>
+    </div>
+    <div id="cs"><p class="st">Seleccioná una categoría</p><div class="cg" id="cg"></div></div>
+  </div>
+
+  <!-- PRODUCTS -->
+  <div id="sp" class="screen">
+    <button class="bb" onclick="goBack()">← Volver a categorías</button>
+    <h2 id="pt" style="margin-bottom:14px;color:var(--primary);font-size:1.05rem"></h2>
+    <div id="pc"></div>
+    <div id="pab" style="display:none;margin-top:18px;text-align:center">
+      <button class="bs" onclick="goConfirm()" style="margin-right:9px">✅ Finalizar compra</button>
+      <button class="bse" onclick="goBack()">Seguir comprando</button>
+    </div>
+  </div>
+
+  <!-- CONFIRM -->
+  <div id="scf" class="screen">
+    <h2 style="color:var(--primary);margin-bottom:14px;font-size:1.05rem">📋 Confirmá tu pedido</h2>
+    <div class="cfcard" id="cci"></div>
+    <div class="cfcard" id="cil"></div>
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:9px">
+      <button class="bse" onclick="showScreen('sc');showAMB()">✏️ Seguir comprando</button>
+      <button class="bs" onclick="doCheckout()">💳 Confirmar e ir a pagar</button>
+    </div>
+    <p style="font-size:.75rem;color:var(--gray);margin-top:10px">Al confirmar serás redirigido a la tienda con tu carrito listo para pagar.</p>
+  </div>
+
+</div></div>
+
+<div id="notif"></div>
+
+<script>
+const PASS='moreno2024';
+const CATS=[
+  {l:'Aditivos',s:'aditivos',i:'🧪'},
+  {l:'Áridos',s:'aridos',i:'🪨'},
+  {l:'Bloques de cemento',s:'bloques-de-cemento',i:'🧱'},
+  {l:'Bolsas',s:'bolsas',i:'🛍️'},
+  {l:'Cerámicas',s:'ceramicas',i:'🏺'},
+  {l:'Combos y ofertas',s:'combos-y-ofertas',i:'🔥'},
+  {l:'Construcción en seco',s:'construccion-en-seco',i:'🔧'},
+  {l:'Electricidad',s:'electricidad',i:'⚡'},
+  {l:'Fieltros y techados',s:'fieltros-y-techados',i:'🏠'},
+  {l:'Griferías Grifmac',s:'griferias-grifmac',i:'🚿'},
+  {l:'Griferías Mozart',s:'griferias-mozart',i:'🚿'},
+  {l:'Herramientas',s:'herramientas',i:'🔨'},
+  {l:'Herramientas Stanley',s:'herramientas-stanley',i:'🔩'},
+  {l:'Hierros',s:'hierros',i:'⚙️'},
+  {l:'Hormigón elaborado',s:'hormigon-elaborado',i:'🏗️'},
+  {l:'Ladrillos',s:'ladrillos',i:'🧱'},
+  {l:'Pintura',s:'pintura',i:'🎨'},
+  {l:'Premoldeados',s:'premoldeados',i:'🏛️'},
+  {l:'Productos web',s:'productos-web',i:'🌐'},
+  {l:'Puertas chapa',s:'puertas-chapa',i:'🚪'},
+  {l:'Puertas placa',s:'puertas-placa',i:'🚪'},
+  {l:'Refractarios',s:'refractarios',i:'🔥'},
+  {l:'Tanques y accesorios',s:'tanques-y-accesorios',i:'💧'},
+  {l:'Ventanas aluminio',s:'ventanas-aluminio',i:'🪟'},
+  {l:'Vigas',s:'vigas',i:'📐'},
+  {l:'Otros',s:'otros',i:'🔍'},
+];
+
+let client={n:'',l:'',d:''};
+let cart=[];
+let cartOpen=false;
+let currentCat=null;
+
+// LOCK
+function checkLock(){
+  if(sessionStorage.getItem('mm_ok')==='1'){unlock();return;}
+  document.getElementById('lock').style.display='flex';
+}
+function tryUnlock(){
+  if(document.getElementById('lp').value===PASS){
+    sessionStorage.setItem('mm_ok','1');
+    unlock();
+  } else {
+    document.getElementById('lerr').style.display='block';
+    document.getElementById('lp').value='';
+    document.getElementById('lp').focus();
+  }
+}
+function unlock(){
+  document.getElementById('lock').style.display='none';
+  loadCart();
+  buildCats();
+  setupSearch();
+}
+document.getElementById('lp').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock()});
+
+// SCREEN
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// WELCOME
+function startShopping(){
+  const n=document.getElementById('fn').value.trim();
+  const l=document.getElementById('ln').value.trim();
+  const d=document.getElementById('dn').value.trim();
+  if(!n||!l||!d){document.getElementById('ferr').style.display='block';return}
+  document.getElementById('ferr').style.display='none';
+  client={n,l,d};
+  document.getElementById('gn').textContent=`¡Hola, ${n}!`;
+  document.getElementById('av').textContent=(n[0]+l[0]).toUpperCase();
+  document.getElementById('client-tag').textContent=`${n} ${l}`;
+  document.getElementById('amb').style.display='none';
+  showScreen('sc');
+}
+
+// CATEGORIES
+function buildCats(){
+  const g=document.getElementById('cg');
+  g.innerHTML='';
+  CATS.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='cb';
+    b.innerHTML=`<span class="ci2">${c.i}</span>${c.l}`;
+    b.onclick=()=>selectCat(c);
+    g.appendChild(b);
+  });
+}
+function showCats(){
+  document.getElementById('cs').style.display='';
+  document.getElementById('amb').style.display='none';
+}
+function showAMB(){
+  document.getElementById('amb').style.display='';
+  document.getElementById('cs').style.display='';
+}
+
+function selectCat(cat){
+  if(cat.s==='otros'){showOthers();return}
+  currentCat=cat;
+  document.getElementById('pt').textContent=`${cat.i} ${cat.l}`;
+  document.getElementById('pab').style.display='none';
+  loadProducts(cat);
+  showScreen('sp');
+}
+
+// PRODUCTS
+async function loadProducts(cat){
+  const con=document.getElementById('pc');
+  con.innerHTML=`<div class="loading"><div class="sp2"></div>Cargando ${cat.l}...</div>`;
+  const url=`https://materialesmoreno.com.ar/tienda/categorias/${cat.s}/`;
+  try{
+    const proxy=`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const r=await fetch(proxy);
+    const data=await r.json();
+    const doc=new DOMParser().parseFromString(data.contents,'text/html');
+    const prods=parseProds(doc);
+    renderProds(prods,con);
+    document.getElementById('pab').style.display=prods.length>0?'block':'none';
+  }catch(e){
+    con.innerHTML=`<div style="text-align:center;padding:28px">
+      <p style="color:var(--gray);margin-bottom:12px">No se pudieron cargar los productos.</p>
+      <a href="${url}" target="_blank" style="background:var(--primary);color:#fff;padding:9px 18px;border-radius:8px;text-decoration:none;font-weight:600">Ver en la tienda ↗</a>
+    </div>`;
+  }
+}
+
+function parseProds(doc){
+  const seen=new Set();
+  const items=[];
+  // selector principal WooCommerce
+  doc.querySelectorAll('li.product').forEach(el=>{
+    const nameEl=el.querySelector('.woocommerce-loop-product__title');
+    if(!nameEl) return;
+    const name=nameEl.textContent.trim();
+    if(!name||seen.has(name)) return;
+    seen.add(name);
+    // precio: busca ins (precio con descuento) primero, si no el primero disponible
+    let price='';
+    const ins=el.querySelector('.price ins .woocommerce-Price-amount');
+    const any=el.querySelector('.price .woocommerce-Price-amount');
+    const pel=ins||any;
+    if(pel) price=pel.textContent.trim();
+    // imagen
+    const img=el.querySelector('img');
+    const imgSrc=img?(img.dataset.src||img.src||''):'';
+    // link producto
+    const link=el.querySelector('a.woocommerce-loop-product__link');
+    const href=link?link.href:'';
+    // id add-to-cart
+    const atc=el.querySelector('[data-product_id],.add_to_cart_button');
+    const pid=atc?(atc.dataset.product_id||atc.getAttribute('data-product_id')||''):'';
+    items.push({name,price,img:imgSrc,link:href,pid});
+  });
+  return items;
+}
+
+function renderProds(prods,con){
+  if(!prods||prods.length===0){
+    con.innerHTML=`<div style="text-align:center;padding:28px;color:var(--gray)">No encontramos productos. <a href="https://materialesmoreno.com.ar/tienda/categorias/${currentCat?currentCat.s:''}/" target="_blank" style="color:var(--primary-light)">Ver en la tienda ↗</a></div>`;
+    return;
+  }
+  const g=document.createElement('div');
+  g.className='pg';
+  prods.forEach((p,i)=>{
+    const c=document.createElement('div');
+    c.className='pc';
+    const imgH=p.img
+      ?`<div class="pi"><img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.parentElement.innerHTML='📦'"></div>`
+      :`<div class="pi">📦</div>`;
+    c.innerHTML=`${imgH}
+      <div class="pif">
+        <div class="pn">${p.name}</div>
+        ${p.price?`<div class="pp">$${p.price.replace(/[^\d.,]/g,'')}</div>`:''}
+        <button class="acb" id="ab${i}" onclick='addToCart(${JSON.stringify(p)},${i})'>+ Agregar al carrito</button>
+      </div>`;
+    g.appendChild(c);
+  });
+  con.innerHTML='';
+  con.appendChild(g);
+}
+
+function addToCart(p,bi){
+  const ex=cart.find(x=>x.name===p.name);
+  if(ex) ex.qty++;
+  else cart.push({...p,qty:1});
+  saveCart();renderCart();
+  if(!cartOpen) toggleCart();
+  const b=document.getElementById(`ab${bi}`);
+  if(b){b.textContent='✓ Agregado';b.classList.add('added');setTimeout(()=>{b.textContent='+ Agregar al carrito';b.classList.remove('added')},1500)}
+  showAMB();
+  notif(`"${p.name.substring(0,22)}" agregado`);
+}
+
+// CART
+function loadCart(){
+  try{cart=JSON.parse(localStorage.getItem('mm_cart')||'[]')}catch(e){cart=[]}
+  renderCart();
+}
+function saveCart(){localStorage.setItem('mm_cart',JSON.stringify(cart))}
+function renderCart(){
+  const body=document.getElementById('cart-body');
+  const tot=document.getElementById('cart-total');
+  if(!cart.length){body.innerHTML='<div class="empty-cart">Tu carrito está vacío</div>';tot.textContent='Total: $0';return}
+  let total=0;body.innerHTML='';
+  cart.forEach((item,i)=>{
+    const pn=item.price?parseFloat(item.price.replace(/[^\d]/g,''))||0:0;
+    total+=pn*item.qty;
+    const d=document.createElement('div');d.className='ci';
+    d.innerHTML=`<div class="ci-name">${item.name}</div>
+      ${item.price?`<div class="ci-price">$${item.price.replace(/[^\d.,]/g,'')} c/u</div>`:''}
+      <div class="ci-row">
+        <button class="qb" onclick="chQty(${i},-1)">−</button>
+        <span style="font-weight:600;min-width:18px;text-align:center">${item.qty}</span>
+        <button class="qb" onclick="chQty(${i},1)">+</button>
+        <button class="rb" onclick="rmItem(${i})">✕ Quitar</button>
+      </div>`;
+    body.appendChild(d);
+  });
+  tot.textContent=`Total: ${total>0?'$'+total.toLocaleString('es-AR'):'(precios variables)'}`;
+}
+function chQty(i,d){cart[i].qty+=d;if(cart[i].qty<=0)cart.splice(i,1);saveCart();renderCart()}
+function rmItem(i){notif(`"${cart[i].name.substring(0,20)}" eliminado`);cart.splice(i,1);saveCart();renderCart()}
+function toggleCart(){
+  cartOpen=!cartOpen;
+  document.getElementById('cart-panel').classList.toggle('open',cartOpen);
+  document.getElementById('content').classList.toggle('shifted',cartOpen);
+}
+
+// BACK
+function goBack(){showScreen('sc');if(cart.length)showAMB()}
+
+// CONFIRM
+function goConfirm(){
+  if(!cart.length){notif('Tu carrito está vacío');return}
+  document.getElementById('cci').innerHTML=`
+    <div style="display:flex;gap:14px;flex-wrap:wrap">
+      <div><span style="font-size:.75rem;color:var(--gray)">Cliente</span><br><strong>${client.n} ${client.l}</strong></div>
+      <div><span style="font-size:.75rem;color:var(--gray)">DNI</span><br><strong>${client.d}</strong></div>
+    </div>`;
+  let total=0,html='';
+  cart.forEach((item,i)=>{
+    const pn=item.price?parseFloat(item.price.replace(/[^\d]/g,''))||0:0;
+    const sub=pn*item.qty;total+=sub;
+    html+=`<div class="cfi">
+      <div>
+        <div style="font-weight:600;font-size:.88rem">${item.name}</div>
+        <div style="font-size:.75rem;color:var(--gray)">Cant: ${item.qty}${item.price?' · $'+item.price.replace(/[^\d.,]/g,''):''} c/u</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px">
+        ${item.price&&sub>0?`<span style="font-weight:600;color:var(--primary-light);font-size:.88rem">$${sub.toLocaleString('es-AR')}</span>`:''}
+        <button onclick="chQty(${i},-1);goConfirm()" class="qb">−</button>
+        <span style="font-weight:600">${item.qty}</span>
+        <button onclick="chQty(${i},1);goConfirm()" class="qb">+</button>
+        <button onclick="rmItem(${i});goConfirm()" class="rb" style="font-size:.68rem">✕</button>
+      </div>
+    </div>`;
+  });
+  html+=`<div class="cft">Total estimado: ${total>0?'$'+total.toLocaleString('es-AR'):'(precios variables)'}</div>`;
+  document.getElementById('cil').innerHTML=html;
+  showScreen('scf');
+  if(cartOpen)toggleCart();
+}
+
+// CHECKOUT — agrega productos al carrito de WooCommerce uno a uno y va al checkout
+function doCheckout(){
+  // Armamos URL con add-to-cart múltiple si hay IDs, sino vamos al carrito
+  const withId=cart.filter(x=>x.pid);
+  const withoutId=cart.filter(x=>!x.pid);
+
+  // Rellenamos datos del cliente en el checkout via URL (WooCommerce los acepta en billing)
+  const base='https://materialesmoreno.com.ar/tienda/checkout/';
+  const params=new URLSearchParams({
+    'billing_first_name':client.n,
+    'billing_last_name':client.l,
+  });
+
+  if(withId.length>0){
+    // Abrimos cada producto para agregarlo al carrito real
+    // Primero el carrito de WooCommerce para limpiar
+    withId.forEach((item,idx)=>{
+      // Usamos la URL de add-to-cart con cantidad
+      const addUrl=`https://materialesmoreno.com.ar/tienda/?add-to-cart=${item.pid}&quantity=${item.qty}`;
+      if(idx===0) window.open(addUrl,'_blank');
+      // Los siguientes los abrimos en la misma pestaña después de un delay no es posible en HTML puro
+      // En cambio informamos al vendedor
+    });
+    if(withId.length>1){
+      notif('Abrí cada producto y hacé clic en "Añadir al carrito"');
+    }
+  }
+
+  // Abrimos checkout con datos del cliente pre-cargados
+  setTimeout(()=>{
+    window.open(`${base}?${params.toString()}`,'_blank');
+  },800);
+
+  // Limpiamos sesión actual
+  clearSession();
+}
+
+function clearSession(){
+  cart=[];
+  client={n:'',l:'',d:''};
+  localStorage.removeItem('mm_cart');
+  // Limpiamos campos del formulario
+  document.getElementById('fn').value='';
+  document.getElementById('ln').value='';
+  document.getElementById('dn').value='';
+  document.getElementById('client-tag').textContent='';
+  document.getElementById('amb').style.display='none';
+  renderCart();
+  if(cartOpen)toggleCart();
+  // Volvemos a pantalla de bienvenida para el próximo cliente
+  showScreen('sw');
+  notif('¡Gracias! Dirigite a caja para abonar.');
+}
+
+// OTHERS
+function showOthers(){
+  document.getElementById('pt').textContent='🔍 Buscar producto';
+  const con=document.getElementById('pc');
+  con.innerHTML=`<div class="os">
+    <p style="margin-bottom:11px;color:var(--gray);font-size:.88rem">Escribí el producto que buscás:</p>
+    <input class="oi" id="oi" type="text" placeholder="Ej: cal hidráulica 25kg..." autocomplete="off" oninput="searchOthers()">
+    <div id="or"></div>
+    <div id="am" style="display:none" class="assist">📍 Te pedimos que te acerques a un mostrador para consultar la disponibilidad del producto que querés comprar.</div>
+  </div>`;
+  showScreen('sp');
+}
+
+async function searchOthers(){
+  const val=document.getElementById('oi').value.trim();
+  const res=document.getElementById('or');
+  document.getElementById('am').style.display='none';
+  if(val.length<3){res.innerHTML='';return}
+  res.innerHTML='<div class="loading" style="padding:12px"><div class="sp2"></div>Buscando...</div>';
+  try{
+    const url=`https://materialesmoreno.com.ar/tienda/?s=${encodeURIComponent(val)}&post_type=product`;
+    const r=await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+    const data=await r.json();
+    const doc=new DOMParser().parseFromString(data.contents,'text/html');
+    const prods=parseProds(doc);
+    if(!prods.length){res.innerHTML='';document.getElementById('am').style.display='block';}
+    else renderProds(prods,res);
+  }catch(e){res.innerHTML='';document.getElementById('am').style.display='block'}
+}
+
+// GLOBAL SEARCH
+function setupSearch(){
+  const inp=document.getElementById('gs');
+  const drop=document.getElementById('search-drop');
+  let t;
+  inp.addEventListener('input',()=>{
+    clearTimeout(t);
+    const val=inp.value.trim();
+    if(val.length<3){drop.style.display='none';return}
+    t=setTimeout(async()=>{
+      drop.style.display='block';
+      drop.innerHTML='<div style="padding:9px;color:#999;font-size:.82rem">Buscando...</div>';
+      try{
+        const url=`https://materialesmoreno.com.ar/tienda/?s=${encodeURIComponent(val)}&post_type=product`;
+        const r=await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+        const data=await r.json();
+        const doc=new DOMParser().parseFromString(data.contents,'text/html');
+        const prods=parseProds(doc).slice(0,7);
+        if(!prods.length){drop.innerHTML='<div style="padding:10px;color:#999;font-size:.82rem">Sin resultados</div>';return}
+        drop.innerHTML='';
+        prods.forEach(p=>{
+          const d=document.createElement('div');d.className='sdr';
+          d.innerHTML=`<div class="sdr-name">${p.name}</div>${p.price?`<div class="sdr-price">$${p.price.replace(/[^\d.,]/g,'')}</div>`:''}`;
+          d.onclick=()=>{drop.style.display='none';inp.value='';addToCart(p,-1);if(client.n)showScreen('sc')};
+          drop.appendChild(d);
+        });
+      }catch(e){drop.innerHTML='<div style="padding:10px;color:#999;font-size:.82rem">Error al buscar</div>'}
+    },420);
+  });
+  document.addEventListener('click',e=>{if(!e.target.closest('#search-wrap'))drop.style.display='none'});
+}
+
+function notif(msg){
+  const n=document.getElementById('notif');
+  n.textContent=msg;n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'),2300);
+}
+
+checkLock();
+</script>
+</body>
+</html>
